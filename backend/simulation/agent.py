@@ -73,6 +73,9 @@ class Agent:
     damage: float = 0.0
     inventory: dict[str, float] = field(default_factory=dict)
     current_task: str = "idle"
+    intent_action: str | None = None
+    intent_x: int | None = None
+    intent_y: int | None = None
 
     visit_map: dict[tuple[int, int], int] = field(default_factory=dict)
 
@@ -113,6 +116,12 @@ class Agent:
         """Ensure energy stays within [0, capacity]."""
         self.energy = max(0.0, min(self.energy, self.hardware.energy_capacity))
 
+    def set_intent(self, action: str, target_x: int | None = None, target_y: int | None = None) -> None:
+        """Record display-only intention for the frontend map."""
+        self.intent_action = action
+        self.intent_x = target_x
+        self.intent_y = target_y
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.id,
@@ -131,6 +140,9 @@ class Agent:
             "damage": round(self.damage, 2),
             "inventory": dict(self.inventory),
             "current_task": self.current_task,
+            "intent_action": self.intent_action,
+            "intent_x": self.intent_x,
+            "intent_y": self.intent_y,
             "alive": self.alive,
             "energy_ratio": round(self.energy_ratio, 3),
         }

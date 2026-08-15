@@ -31,6 +31,17 @@ export function AgentPanel() {
           <dt>Age</dt><dd>{agent.age} ticks</dd>
           <dt>Lineage</dt><dd className="mono">{agent.lineage_id.slice(0, 8)}…</dd>
           <dt>Task</dt><dd className="task">{agent.current_task}</dd>
+          {agent.intent_action && (
+            <>
+              <dt>Intent</dt>
+              <dd className="task">
+                {agent.intent_action}
+                {agent.intent_x != null && agent.intent_y != null
+                  ? ` → (${agent.intent_x}, ${agent.intent_y})`
+                  : ''}
+              </dd>
+            </>
+          )}
         </dl>
       </section>
 

@@ -19,9 +19,17 @@ interface SimStore {
   selectedAgentId: string | null;
   selectedAgent: Agent | null;
   ws: WebSocket | null;
+  showTrails: boolean;
+  showActivity: boolean;
+  focusMode: boolean;
+  sidebarOpen: boolean;
 
   setConnected: (v: boolean) => void;
   setSelectedAgent: (id: string | null) => void;
+  setShowTrails: (v: boolean) => void;
+  setShowActivity: (v: boolean) => void;
+  setFocusMode: (v: boolean) => void;
+  setSidebarOpen: (v: boolean) => void;
   applyState: (state: Partial<SimulationState>) => void;
   applyTick: (data: { tick: number; agents: Agent[]; metrics: TickMetrics; events: SimEvent[] }) => void;
   connect: () => void;
@@ -48,9 +56,17 @@ export const useSimStore = create<SimStore>((set, get) => ({
   selectedAgentId: null,
   selectedAgent: null,
   ws: null,
+  showTrails: true,
+  showActivity: true,
+  focusMode: true,
+  sidebarOpen: false,
 
   setConnected: (v) => set({ connected: v }),
-  setSelectedAgent: (id) => set({ selectedAgentId: id, selectedAgent: null }),
+  setSelectedAgent: (id) => set({ selectedAgentId: id, selectedAgent: null, sidebarOpen: id != null ? true : get().sidebarOpen }),
+  setShowTrails: (v) => set({ showTrails: v }),
+  setShowActivity: (v) => set({ showActivity: v }),
+  setFocusMode: (v) => set({ focusMode: v }),
+  setSidebarOpen: (v) => set({ sidebarOpen: v }),
 
   applyState: (state) =>
     set({
