@@ -218,6 +218,7 @@ export function WorldCanvas() {
       if (!entry) return;
       const w = Math.max(320, Math.floor(entry.contentRect.width));
       const h = Math.max(280, Math.floor(entry.contentRect.height));
+      if (w === sizeRef.current.w && h === sizeRef.current.h) return;
       sizeRef.current = { w, h };
       setSize({ w, h });
       if (appRef.current) {
@@ -228,6 +229,14 @@ export function WorldCanvas() {
       }
     });
     ro.observe(el);
+    // Initial measure (observer may not fire synchronously)
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      const w = Math.max(320, Math.floor(rect.width));
+      const h = Math.max(280, Math.floor(rect.height));
+      sizeRef.current = { w, h };
+      setSize({ w, h });
+    }
     return () => ro.disconnect();
   }, []);
 
