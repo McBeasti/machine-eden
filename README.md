@@ -31,17 +31,33 @@ This creates a public repo named `machine-eden` and pushes the `main` branch. Ed
 
 ## Quick start (test the app)
 
-From the repository root on macOS/Linux:
+### Windows (Command Prompt)
+
+1. Install [Python 3.11+](https://www.python.org/downloads/) and [Node.js 20+](https://nodejs.org/) if you do not have them.
+2. Open **Command Prompt**, go to your clone of this repo, then run:
+
+```bat
+cd path\to\machine-eden
+scripts\dev.cmd
+```
+
+Two windows open (backend + frontend). Then open **http://localhost:5173** in your browser.
+
+### Windows (PowerShell)
+
+```powershell
+cd path\to\machine-eden
+.\scripts\dev.ps1
+```
+
+### macOS / Linux
 
 ```bash
-# one-time: ensure Python venv support (Debian/Ubuntu)
-# sudo apt install python3.12-venv
-
 chmod +x scripts/dev.sh
 ./scripts/dev.sh
 ```
 
-Then open **http://localhost:5173**. The script starts the API on port 8000 and the UI on 5173.
+Then open **http://localhost:5173**.
 
 Or start the two processes yourself:
 
