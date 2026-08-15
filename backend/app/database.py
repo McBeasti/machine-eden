@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import json
+import os
 from datetime import datetime
 from pathlib import Path
 
 from sqlalchemy import DateTime, Integer, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+# On Vercel the filesystem is ephemeral; keep SQLite under /tmp.
+if os.environ.get("VERCEL"):
+    DATA_DIR = Path("/tmp/machine-eden")
+else:
+    DATA_DIR = Path(__file__).resolve().parents[2] / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH = DATA_DIR / "machine_eden.db"
 

@@ -105,6 +105,7 @@ class SimulationEngine:
             if intent.decision:
                 self.decisions.record(intent.decision)
 
+            agent.set_intent(intent.action.value, intent.target_x, intent.target_y)
             self._execute_action(agent, intent, scarcity)
 
             idle_cost = ENERGY_COSTS[ActionType.IDLE] * agent.hardware.energy_consumption * scarcity

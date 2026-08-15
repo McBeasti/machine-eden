@@ -7,14 +7,27 @@ export function Controls() {
   const running = useSimStore((s) => s.running);
   const speed = useSimStore((s) => s.speed);
   const config = useSimStore((s) => s.config);
-  const sendAction = useSimStore((s) => s.sendAction);
+  const tick = useSimStore((s) => s.tick);
+  const agents = useSimStore((s) => s.agents);
+  const start = useSimStore((s) => s.start);
+  const pause = useSimStore((s) => s.pause);
+  const step = useSimStore((s) => s.step);
+  const setSpeed = useSimStore((s) => s.setSpeed);
   const reset = useSimStore((s) => s.reset);
+  const showTrails = useSimStore((s) => s.showTrails);
+  const showActivity = useSimStore((s) => s.showActivity);
+  const focusMode = useSimStore((s) => s.focusMode);
+  const setShowTrails = useSimStore((s) => s.setShowTrails);
+  const setShowActivity = useSimStore((s) => s.setShowActivity);
+  const setFocusMode = useSimStore((s) => s.setFocusMode);
+  const sidebarOpen = useSimStore((s) => s.sidebarOpen);
+  const setSidebarOpen = useSimStore((s) => s.setSidebarOpen);
 
   return (
-    <div className="controls">
+    <header className="controls">
       <div className="brand">
         <h1>MACHINE EDEN</h1>
-        <span className="phase">Phase 1 — Visual Foundation</span>
+        <span className="phase">Living Colony — Visual Foundation</span>
       </div>
 
       <div className="control-group">
@@ -25,12 +38,12 @@ export function Controls() {
 
       <div className="control-group">
         {!running ? (
-          <button className="btn primary" onClick={() => sendAction('start')}>▶ Resume</button>
+          <button className="btn primary" onClick={() => void start()}>▶ Resume</button>
         ) : (
-          <button className="btn" onClick={() => sendAction('pause')}>⏸ Pause</button>
+          <button className="btn" onClick={() => void pause()}>⏸ Pause</button>
         )}
-        <button className="btn" onClick={() => sendAction('step')}>⏭ Step</button>
-        <button className="btn danger" onClick={() => reset()}>↺ Reset</button>
+        <button className="btn" onClick={() => void step()}>⏭ Step</button>
+        <button className="btn danger" onClick={() => void reset()}>↺ Reset</button>
       </div>
 
       <div className="control-group speed">
@@ -39,20 +52,54 @@ export function Controls() {
           <button
             key={s}
             className={`btn sm ${speed === s ? 'active' : ''}`}
-            onClick={() => sendAction('speed', { multiplier: s })}
+            onClick={() => void setSpeed(s)}
           >
             {s}×
           </button>
         ))}
       </div>
 
-      {config && (
-        <div className="config-info">
-          <span>Seed: {config.seed}</span>
-          <span>World: {config.world_width}×{config.world_height}</span>
-          <span>Agents: {config.initial_population}</span>
-        </div>
-      )}
-    </div>
+      <div className="control-group overlays">
+        <label>View</label>
+        <button
+          className={`btn sm ${showTrails ? 'active' : ''}`}
+          onClick={() => setShowTrails(!showTrails)}
+          title="Motion trails and intent beams"
+        >
+          Trails
+        </button>
+        <button
+          className={`btn sm ${showActivity ? 'active' : ''}`}
+          onClick={() => setShowActivity(!showActivity)}
+          title="Recent mining / energy activity heat"
+        >
+          Activity
+        </button>
+        <button
+          className={`btn sm ${focusMode ? 'active' : ''}`}
+          onClick={() => setFocusMode(!focusMode)}
+          title="Dim other agents when one is selected"
+        >
+          Focus
+        </button>
+        <button
+          className={`btn sm ${sidebarOpen ? 'active' : ''}`}
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+        >
+          Data
+        </button>
+      </div>
+
+      <div className="config-info">
+        <span>T{tick}</span>
+        <span>{agents.length} alive</span>
+        {config && (
+          <>
+            <span>Seed {config.seed}</span>
+            <span>{config.world_width}×{config.world_height}</span>
+          </>
+        )}
+      </div>
+    </header>
   );
 }

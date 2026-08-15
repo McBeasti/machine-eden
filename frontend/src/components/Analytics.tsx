@@ -1,5 +1,5 @@
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { useSimStore } from '../store';
 
@@ -11,7 +11,7 @@ export function AnalyticsDashboard() {
 
   return (
     <div className="panel analytics">
-      <h3>Analytics</h3>
+      <h3>Colony Pulse</h3>
       <div className="stat-grid">
         <div className="stat">
           <span className="stat-value">{agents.length}</span>
@@ -33,29 +33,14 @@ export function AnalyticsDashboard() {
 
       <div className="chart-block">
         <h4>Population</h4>
-        <ResponsiveContainer width="100%" height={100}>
+        <ResponsiveContainer width="100%" height={80}>
           <AreaChart data={metrics}>
             <CartesianGrid strokeDasharray="3 3" stroke="#1a2332" />
-            <XAxis dataKey="tick" tick={{ fill: '#6b7a8f', fontSize: 10 }} />
-            <YAxis tick={{ fill: '#6b7a8f', fontSize: 10 }} />
+            <XAxis dataKey="tick" hide />
+            <YAxis tick={{ fill: '#6b7a8f', fontSize: 9 }} width={28} />
             <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid #30363d' }} />
-            <Area type="monotone" dataKey="population" stroke="#00b4d8" fill="#00b4d833" />
+            <Area type="monotone" dataKey="population" stroke="#38bdf8" fill="#38bdf833" />
           </AreaChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="chart-block">
-        <h4>Energy Balance</h4>
-        <ResponsiveContainer width="100%" height={100}>
-          <LineChart data={metrics}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1a2332" />
-            <XAxis dataKey="tick" tick={{ fill: '#6b7a8f', fontSize: 10 }} />
-            <YAxis tick={{ fill: '#6b7a8f', fontSize: 10 }} />
-            <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid #30363d' }} />
-            <Line type="monotone" dataKey="mean_energy" stroke="#ffd60a" dot={false} />
-            <Line type="monotone" dataKey="energy_production" stroke="#00ff88" dot={false} />
-            <Line type="monotone" dataKey="energy_consumption" stroke="#e63946" dot={false} />
-          </LineChart>
         </ResponsiveContainer>
       </div>
     </div>

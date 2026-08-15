@@ -10,7 +10,7 @@ cd "$ROOT/backend"
 if [ ! -d .venv ]; then python3 -m venv .venv; fi
 source .venv/bin/activate
 pip install -r requirements.txt -q
-uvicorn app.main:app --reload --port 8000 &
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 
 sleep 2
@@ -18,7 +18,7 @@ sleep 2
 # Frontend
 cd "$ROOT/frontend"
 npm install
-npm run dev &
+npm run dev -- --host 0.0.0.0 --port 5173 &
 FRONTEND_PID=$!
 
 echo ""

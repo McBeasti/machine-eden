@@ -1,0 +1,12 @@
+# Keep backend/.vercel (Python function venv) uploadable for prebuilt deploys.
+# Only ignore local tool caches / secrets.
+**/.venv
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+frontend/dist
+data/*.db
+.env
+.env.local
+backend/.vercel/python/cache

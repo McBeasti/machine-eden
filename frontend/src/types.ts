@@ -43,6 +43,9 @@ export interface Agent {
   damage: number;
   inventory: Record<string, number>;
   current_task: string;
+  intent_action?: string | null;
+  intent_x?: number | null;
+  intent_y?: number | null;
   alive: boolean;
   energy_ratio: number;
   decisions?: DecisionRecord[];
@@ -119,15 +122,16 @@ export interface SimulationState {
   events: SimEvent[];
 }
 
+/** Legacy CSS legend colours — map uses TERRAIN_HEX in render/palette. */
 export const TERRAIN_COLORS: Record<number, string> = {
-  0: '#0a0e17',
-  1: '#2d6a4f',
-  2: '#5c4d3c',
-  3: '#7b2cbf',
-  4: '#ffd60a',
-  5: '#00b4d8',
-  6: '#e63946',
-  7: '#6c757d',
+  0: '#070b12',
+  1: '#1a7a52',
+  2: '#8a6a3a',
+  3: '#a855f7',
+  4: '#ffc107',
+  5: '#22d3ee',
+  6: '#ef4444',
+  7: '#64748b',
 };
 
 export const TERRAIN_NAMES: Record<number, string> = {

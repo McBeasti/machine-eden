@@ -52,14 +52,16 @@ class SimulationManager:
             await asyncio.sleep(max(0.01, interval))
 
     def start(self) -> None:
-        if not self.engine.running:
-            self.engine.running = True
-            try:
-                loop = asyncio.get_running_loop()
-                self._task = loop.create_task(self._run_loop())
-            except RuntimeError:
-                # No event loop (e.g. sync test context) — flag only
-                pass
+        """Start the async tick loop. Must be called from an async context."""
+        if self._task and not self._task.done() and self.engine.running:
+            return
+        self.engine.running = True
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            # Sync/test context — flag only; no loop to schedule on
+            return
+        self._task = loop.create_task(self._run_loop())
 
     def pause(self) -> None:
         self.engine.running = False

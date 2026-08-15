@@ -29,6 +29,51 @@ This creates a public repo named `machine-eden` and pushes the `main` branch. Ed
 
 **Recommended:** clone to a local (non–Google Drive) folder for development — `node_modules` and `.venv` sync poorly on Drive.
 
+## Deploy on Vercel
+
+This repo is set up as a Vercel Services project (Vite frontend + FastAPI backend).
+
+```bash
+npm i -g vercel
+vercel login
+vercel        # preview
+vercel --prod # production
+```
+
+After deploy, open the printed URL. The UI is served from the frontend service; `/api` and `/ws` go to the FastAPI backend.
+
+## Quick start (test the app)
+
+### Windows (Command Prompt)
+
+1. Install [Python 3.11+](https://www.python.org/downloads/) and [Node.js 20+](https://nodejs.org/) if you do not have them.
+2. Open **Command Prompt**, go to your clone of this repo, then run:
+
+```bat
+cd path\to\machine-eden
+scripts\dev.cmd
+```
+
+Two windows open (backend + frontend). Then open **http://localhost:5173** in your browser.
+
+### Windows (PowerShell)
+
+```powershell
+cd path\to\machine-eden
+.\scripts\dev.ps1
+```
+
+### macOS / Linux
+
+```bash
+chmod +x scripts/dev.sh
+./scripts/dev.sh
+```
+
+Then open **http://localhost:5173**.
+
+Or start the two processes yourself:
+
 ## Prerequisites
 
 - Python 3.11+
@@ -48,7 +93,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 pip install -r requirements.txt
-uvicorn app.main:app --reload --app-dir .
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 The API runs at `http://localhost:8000`. OpenAPI docs: `http://localhost:8000/docs`.
@@ -58,7 +103,7 @@ The API runs at `http://localhost:8000`. OpenAPI docs: `http://localhost:8000/do
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
 The UI runs at `http://localhost:5173` and proxies `/api` and `/ws` to the backend.
