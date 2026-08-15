@@ -7,7 +7,10 @@ export function Controls() {
   const running = useSimStore((s) => s.running);
   const speed = useSimStore((s) => s.speed);
   const config = useSimStore((s) => s.config);
-  const sendAction = useSimStore((s) => s.sendAction);
+  const start = useSimStore((s) => s.start);
+  const pause = useSimStore((s) => s.pause);
+  const step = useSimStore((s) => s.step);
+  const setSpeed = useSimStore((s) => s.setSpeed);
   const reset = useSimStore((s) => s.reset);
 
   return (
@@ -25,12 +28,12 @@ export function Controls() {
 
       <div className="control-group">
         {!running ? (
-          <button className="btn primary" onClick={() => sendAction('start')}>▶ Resume</button>
+          <button className="btn primary" onClick={() => void start()}>▶ Resume</button>
         ) : (
-          <button className="btn" onClick={() => sendAction('pause')}>⏸ Pause</button>
+          <button className="btn" onClick={() => void pause()}>⏸ Pause</button>
         )}
-        <button className="btn" onClick={() => sendAction('step')}>⏭ Step</button>
-        <button className="btn danger" onClick={() => reset()}>↺ Reset</button>
+        <button className="btn" onClick={() => void step()}>⏭ Step</button>
+        <button className="btn danger" onClick={() => void reset()}>↺ Reset</button>
       </div>
 
       <div className="control-group speed">
@@ -39,7 +42,7 @@ export function Controls() {
           <button
             key={s}
             className={`btn sm ${speed === s ? 'active' : ''}`}
-            onClick={() => sendAction('speed', { multiplier: s })}
+            onClick={() => void setSpeed(s)}
           >
             {s}×
           </button>

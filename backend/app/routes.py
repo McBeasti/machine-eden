@@ -63,7 +63,7 @@ def update_config(body: ConfigUpdate):
 
 
 @router.post("/simulation/reset")
-def reset_simulation(body: ConfigUpdate | None = None):
+async def reset_simulation(body: ConfigUpdate | None = None):
     config = None
     if body:
         updates = {k: v for k, v in body.model_dump().items() if v is not None}
@@ -74,25 +74,26 @@ def reset_simulation(body: ConfigUpdate | None = None):
 
 
 @router.post("/simulation/start")
-def start_simulation():
+async def start_simulation():
+    # async so manager.start() can schedule the tick loop on this event loop
     manager.start()
     return {"running": True}
 
 
 @router.post("/simulation/pause")
-def pause_simulation():
+async def pause_simulation():
     manager.pause()
     return {"running": False}
 
 
 @router.post("/simulation/step")
-def step_simulation():
+async def step_simulation():
     delta = manager.step_once()
     return delta
 
 
 @router.post("/simulation/speed")
-def set_speed(body: SpeedUpdate):
+async def set_speed(body: SpeedUpdate):
     manager.set_speed(body.multiplier)
     return {"speed": manager.engine.speed_multiplier}
 

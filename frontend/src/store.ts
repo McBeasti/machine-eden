@@ -24,6 +24,10 @@ interface SimStore {
   connect: () => void;
   disconnect: () => void;
   sendAction: (action: string, payload?: Record<string, unknown>) => void;
+  start: () => Promise<void>;
+  pause: () => Promise<void>;
+  step: () => Promise<void>;
+  setSpeed: (multiplier: number) => Promise<void>;
   fetchAgent: (id: string) => Promise<void>;
   reset: (config?: Partial<SimConfig>) => Promise<void>;
 }
@@ -67,34 +71,89 @@ export const useSimStore = create<SimStore>((set, get) => ({
 
   connect: () => {
     const existing = get().ws;
-    if (existing?.readyState === WebSocket.OPEN) return;
+    if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host;
     const ws = new WebSocket(`${protocol}//${host}/ws/simulation`);
 
-    ws.onopen = () => set({ connected: true, ws });
-    ws.onclose = () => set({ connected: false, ws: null, running: false });
+    ws.onopen = () => {
+      if (get().ws && get().ws !== ws && get().ws?.readyState === WebSocket.OPEN) {
+        ws.close();
+        return;
+      }
+      set({ connected: true, ws });
+    };
+    ws.onclose = () => {
+      // Ignore close from a superseded StrictMode socket
+      if (get().ws !== ws && get().ws != null) return;
+      set({ connected: false, ws: null, running: false });
+    };
+    ws.onerror = () => {
+      // onclose will follow; keep store consistent if this was the active socket
+      if (get().ws === ws) set({ connected: false });
+    };
     ws.onmessage = (ev) => {
       const msg = JSON.parse(ev.data);
       if (msg.type === 'state') get().applyState(msg.data);
       if (msg.type === 'tick') get().applyTick(msg.data);
     };
+
+    // Assign early so disconnect/StrictMode can target this socket
+    set({ ws });
   },
 
   disconnect: () => {
-    get().ws?.close();
+    const ws = get().ws;
+    if (ws) {
+      ws.onclose = null;
+      ws.close();
+    }
     set({ ws: null, connected: false });
   },
 
+  // Prefer REST for controls (reliable); keep WS for live tick streaming.
   sendAction: (action, payload = {}) => {
-    const ws = get().ws;
-    if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ action, ...payload }));
-      if (action === 'start') set({ running: true });
-      if (action === 'pause') set({ running: false });
-      if (action === 'speed') set({ speed: payload.multiplier as number });
+    if (action === 'start') void get().start();
+    else if (action === 'pause') void get().pause();
+    else if (action === 'step') void get().step();
+    else if (action === 'speed') void get().setSpeed(payload.multiplier as number);
+    else {
+      const ws = get().ws;
+      if (ws?.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ action, ...payload }));
+      }
     }
+  },
+
+  start: async () => {
+    const res = await fetch(`${API}/simulation/start`, { method: 'POST' });
+    if (res.ok) set({ running: true });
+  },
+
+  pause: async () => {
+    const res = await fetch(`${API}/simulation/pause`, { method: 'POST' });
+    if (res.ok) set({ running: false });
+  },
+
+  step: async () => {
+    const res = await fetch(`${API}/simulation/step`, { method: 'POST' });
+    if (res.ok) {
+      const delta = await res.json();
+      get().applyTick(delta);
+      set({ running: false });
+    }
+  },
+
+  setSpeed: async (multiplier: number) => {
+    const res = await fetch(`${API}/simulation/speed`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ multiplier }),
+    });
+    if (res.ok) set({ speed: multiplier });
   },
 
   fetchAgent: async (id) => {
@@ -114,7 +173,7 @@ export const useSimStore = create<SimStore>((set, get) => ({
     if (res.ok) {
       const state = await res.json();
       get().applyState(state);
-      set({ running: false, tick: 0 });
+      set({ running: false, tick: state.tick ?? 0 });
     }
   },
 }));
