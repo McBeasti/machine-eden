@@ -1,19 +1,17 @@
 @echo off
 REM Machine Eden development startup (Windows CMD)
 setlocal
-set ROOT=%~dp0..
+set "ROOT=%~dp0.."
 cd /d "%ROOT%"
 
 echo Starting Machine Eden...
 echo.
 
-REM Backend
-start "Machine Eden Backend" cmd /k "cd /d "%ROOT%\backend" && if not exist .venv python -m venv .venv && call .venv\Scripts\activate.bat && pip install -r requirements.txt -q && uvicorn app.main:app --reload --host 127.0.0.1 --port 8000"
+start "Machine Eden Backend" cmd /k "cd /d ""%ROOT%\backend"" && if not exist .venv python -m venv .venv && call .venv\Scripts\activate.bat && pip install -r requirements.txt -q && uvicorn app.main:app --reload --host 127.0.0.1 --port 8000"
 
 timeout /t 3 /nobreak >nul
 
-REM Frontend
-start "Machine Eden Frontend" cmd /k "cd /d "%ROOT%\frontend" && npm install && npm run dev -- --host 127.0.0.1 --port 5173"
+start "Machine Eden Frontend" cmd /k "cd /d ""%ROOT%\frontend"" && npm install && npm run dev -- --host 127.0.0.1 --port 5173"
 
 echo Backend:  http://localhost:8000
 echo Frontend: http://localhost:5173
