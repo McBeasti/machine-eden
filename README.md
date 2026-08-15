@@ -29,6 +29,22 @@ This creates a public repo named `machine-eden` and pushes the `main` branch. Ed
 
 **Recommended:** clone to a local (non–Google Drive) folder for development — `node_modules` and `.venv` sync poorly on Drive.
 
+## Quick start (test the app)
+
+From the repository root on macOS/Linux:
+
+```bash
+# one-time: ensure Python venv support (Debian/Ubuntu)
+# sudo apt install python3.12-venv
+
+chmod +x scripts/dev.sh
+./scripts/dev.sh
+```
+
+Then open **http://localhost:5173**. The script starts the API on port 8000 and the UI on 5173.
+
+Or start the two processes yourself:
+
 ## Prerequisites
 
 - Python 3.11+
@@ -48,7 +64,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 pip install -r requirements.txt
-uvicorn app.main:app --reload --app-dir .
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 The API runs at `http://localhost:8000`. OpenAPI docs: `http://localhost:8000/docs`.
@@ -58,7 +74,7 @@ The API runs at `http://localhost:8000`. OpenAPI docs: `http://localhost:8000/do
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
 The UI runs at `http://localhost:5173` and proxies `/api` and `/ws` to the backend.

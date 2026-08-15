@@ -1,8 +1,8 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { Application, Container, Graphics } from 'pixi.js';
-import { useSimStore } from './store';
-import { TERRAIN_COLORS } from './types';
-import type { Agent } from './types';
+import { useSimStore } from '../store';
+import { TERRAIN_COLORS } from '../types';
+import type { Agent } from '../types';
 
 const CELL = 6;
 
@@ -27,6 +27,7 @@ export function WorldCanvas({ width, height }: WorldCanvasProps) {
   const appRef = useRef<Application | null>(null);
   const worldContainerRef = useRef<Container | null>(null);
   const agentContainerRef = useRef<Container | null>(null);
+  const readyRef = useRef(false);
   const panRef = useRef({ x: 0, y: 0, dragging: false, lastX: 0, lastY: 0 });
   const zoomRef = useRef(1);
 
@@ -50,7 +51,7 @@ export function WorldCanvas({ width, height }: WorldCanvasProps) {
       for (let x = 0; x < w; x++) {
         const terrain = world.terrain[y][x];
         const resource = world.resources[y][x];
-        let color = TERRAIN_COLORS[terrain] ?? '#111';
+        const color = TERRAIN_COLORS[terrain] ?? '#111';
         if (resource > 0 && terrain !== 0) {
           const alpha = Math.min(1, resource / 50);
           g.rect(x * CELL, y * CELL, CELL, CELL);
@@ -76,8 +77,6 @@ export function WorldCanvas({ width, height }: WorldCanvasProps) {
       const ex = agent.x * CELL + CELL / 2;
       const ey = agent.y * CELL + CELL / 2;
 
-      // Energy ring
-      const energyAngle = agent.energy_ratio * Math.PI * 2;
       g.circle(ex, ey, size + 2);
       g.stroke({ width: 1, color: 0x00ff88, alpha: agent.energy_ratio * 0.8 });
 
@@ -100,9 +99,30 @@ export function WorldCanvas({ width, height }: WorldCanvasProps) {
     });
   }, [agents, selectedAgentId, setSelectedAgent, fetchAgent]);
 
+  const drawWorldRef = useRef(drawWorld);
+  const drawAgentsRef = useRef(drawAgents);
+  drawWorldRef.current = drawWorld;
+  drawAgentsRef.current = drawAgents;
+
   useEffect(() => {
     if (!containerRef.current) return;
     let destroyed = false;
+
+    const onMouseUp = () => {
+      panRef.current.dragging = false;
+    };
+    const onMouseMove = (e: MouseEvent) => {
+      if (!panRef.current.dragging || !appRef.current) return;
+      const stage = appRef.current.stage.children[0] as Container | undefined;
+      if (!stage) return;
+      const dx = e.clientX - panRef.current.lastX;
+      const dy = e.clientY - panRef.current.lastY;
+      panRef.current.x += dx;
+      panRef.current.y += dy;
+      panRef.current.lastX = e.clientX;
+      panRef.current.lastY = e.clientY;
+      stage.position.set(panRef.current.x, panRef.current.y);
+    };
 
     const init = async () => {
       const app = new Application();
@@ -118,7 +138,11 @@ export function WorldCanvas({ width, height }: WorldCanvasProps) {
         app.destroy();
         return;
       }
-      containerRef.current!.appendChild(app.canvas);
+      if (!containerRef.current) {
+        app.destroy();
+        return;
+      }
+      containerRef.current.appendChild(app.canvas);
       appRef.current = app;
 
       const stage = new Container();
@@ -130,50 +154,47 @@ export function WorldCanvas({ width, height }: WorldCanvasProps) {
       stage.addChild(agentC);
       worldContainerRef.current = worldC;
       agentContainerRef.current = agentC;
+      readyRef.current = true;
 
-      // Pan
       app.canvas.addEventListener('mousedown', (e) => {
         panRef.current.dragging = true;
         panRef.current.lastX = e.clientX;
         panRef.current.lastY = e.clientY;
       });
-      window.addEventListener('mouseup', () => {
-        panRef.current.dragging = false;
-      });
-      window.addEventListener('mousemove', (e) => {
-        if (!panRef.current.dragging) return;
-        const dx = e.clientX - panRef.current.lastX;
-        const dy = e.clientY - panRef.current.lastY;
-        panRef.current.x += dx;
-        panRef.current.y += dy;
-        panRef.current.lastX = e.clientX;
-        panRef.current.lastY = e.clientY;
-        stage.position.set(panRef.current.x, panRef.current.y);
-      });
+      window.addEventListener('mouseup', onMouseUp);
+      window.addEventListener('mousemove', onMouseMove);
 
-      // Zoom
       app.canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
         const delta = e.deltaY > 0 ? 0.9 : 1.1;
         zoomRef.current = Math.max(0.3, Math.min(4, zoomRef.current * delta));
         stage.scale.set(zoomRef.current);
       });
+
+      // World/agents may already be loaded before Pixi finished initializing.
+      drawWorldRef.current();
+      drawAgentsRef.current();
     };
 
     init();
     return () => {
       destroyed = true;
+      readyRef.current = false;
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('mousemove', onMouseMove);
       appRef.current?.destroy(true);
       appRef.current = null;
+      worldContainerRef.current = null;
+      agentContainerRef.current = null;
     };
   }, [width, height]);
 
   useEffect(() => {
-    drawWorld();
+    if (readyRef.current) drawWorld();
   }, [drawWorld]);
 
   useEffect(() => {
-    drawAgents();
+    if (readyRef.current) drawAgents();
   }, [drawAgents]);
 
   return (
