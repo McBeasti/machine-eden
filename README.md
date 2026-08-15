@@ -13,6 +13,22 @@ Machine Colony/
 └── docs/             # Architecture and experiment guides
 ```
 
+## GitHub
+
+The project is ready to publish. From the repository root:
+
+```powershell
+# 1. Authenticate (one-time)
+gh auth login --web --git-protocol https
+
+# 2. Create repo and push
+.\scripts\publish-github.ps1
+```
+
+This creates a public repo named `machine-eden` and pushes the `main` branch. Edit `scripts/publish-github.ps1` to use `private` or a different name.
+
+**Recommended:** clone to a local (non–Google Drive) folder for development — `node_modules` and `.venv` sync poorly on Drive.
+
 ## Prerequisites
 
 - Python 3.11+
