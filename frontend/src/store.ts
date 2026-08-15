@@ -3,6 +3,9 @@ import type { Agent, SimConfig, SimEvent, SimulationState, TickMetrics, WorldSta
 
 const API = '/api';
 
+/** Set true only when the UI intentionally closes the socket (unmount). */
+let intentionalDisconnect = false;
+
 interface SimStore {
   connected: boolean;
   running: boolean;
@@ -70,6 +73,7 @@ export const useSimStore = create<SimStore>((set, get) => ({
     })),
 
   connect: () => {
+    intentionalDisconnect = false;
     const existing = get().ws;
     if (existing && (existing.readyState === WebSocket.OPEN || existing.readyState === WebSocket.CONNECTING)) {
       return;
@@ -90,6 +94,12 @@ export const useSimStore = create<SimStore>((set, get) => ({
       // Ignore close from a superseded StrictMode socket
       if (get().ws !== ws && get().ws != null) return;
       set({ connected: false, ws: null, running: false });
+      // Vercel WebSocket connections close at function max duration — reconnect.
+      if (!intentionalDisconnect) {
+        window.setTimeout(() => {
+          if (!intentionalDisconnect && !get().connected) get().connect();
+        }, 1500);
+      }
     };
     ws.onerror = () => {
       // onclose will follow; keep store consistent if this was the active socket
@@ -106,6 +116,7 @@ export const useSimStore = create<SimStore>((set, get) => ({
   },
 
   disconnect: () => {
+    intentionalDisconnect = true;
     const ws = get().ws;
     if (ws) {
       ws.onclose = null;

@@ -29,6 +29,19 @@ This creates a public repo named `machine-eden` and pushes the `main` branch. Ed
 
 **Recommended:** clone to a local (non–Google Drive) folder for development — `node_modules` and `.venv` sync poorly on Drive.
 
+## Deploy on Vercel
+
+This repo is set up as a Vercel Services project (Vite frontend + FastAPI backend).
+
+```bash
+npm i -g vercel
+vercel login
+vercel        # preview
+vercel --prod # production
+```
+
+After deploy, open the printed URL. The UI is served from the frontend service; `/api` and `/ws` go to the FastAPI backend.
+
 ## Quick start (test the app)
 
 ### Windows (Command Prompt)

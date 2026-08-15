@@ -48,5 +48,8 @@ Thumbs.db
 .env.local
 *.pem
 
+# Vercel
+.vercel/
+
 # TypeScript
 *.tsbuildinfo
